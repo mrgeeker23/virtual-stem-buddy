@@ -7,12 +7,12 @@ import { useToast } from '@/hooks/use-toast';
 const VirtualStemPlayer = () => {
   const { toast } = useToast();
   const [keyAudios] = useState<HTMLAudioElement[]>(() =>
-    Array.from({ length: 8 }, (_, i) => new Audio(`/audio/key${i + 1}.wav`))
+    Array.from({ length: 8 }, (_, i) => new Audio(`/audio/key${i + 1}.mp3`))
   );
 
-  const drums = useAudioPlayer('/audio/drums.wav', { loop: true, bpm: 85 });
-  const bass = useAudioPlayer('/audio/bass.wav', { loop: true, bpm: 85 });
-  const favorite = useOneShot('/audio/favorite.wav');
+  const drums = useAudioPlayer('/audio/drums.mp3', { loop: true, bpm: 85 });
+  const bass = useAudioPlayer('/audio/bass.mp3', { loop: true, bpm: 85 });
+  const favorite = useOneShot('/audio/favorite.mp3');
 
   const handleKeyPlay = useCallback((keyIndex: number) => {
     const audio = keyAudios[keyIndex];
@@ -65,8 +65,8 @@ const VirtualStemPlayer = () => {
 
         <div className="text-center text-xs text-muted-foreground bg-card rounded-xl p-4 border">
           <p className="font-medium mb-1">Setup Instructions</p>
-          <p>Place your WAV files in the public/audio folder:</p>
-          <p className="text-foreground/60">key1.wav - key8.wav, drums.wav, bass.wav, favorite.wav</p>
+          <p>Place your MP3 files in the public/audio folder:</p>
+          <p className="text-foreground/60">key1.mp3 - key8.mp3, drums.mp3, bass.mp3, favorite.mp3</p>
         </div>
       </div>
     </div>
