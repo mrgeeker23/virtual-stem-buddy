@@ -14,13 +14,13 @@ interface VirtualPianoProps {
 
 const KEY_POSITIONS = [
   { x: 10, y: 60, width: 10, height: 30, label: 'Key 1' },
-  { x: 22, y: 60, width: 10, height: 30, label: 'Key 2' },
-  { x: 34, y: 60, width: 10, height: 30, label: 'Key 3' },
-  { x: 46, y: 60, width: 10, height: 30, label: 'Key 4' },
-  { x: 58, y: 60, width: 10, height: 30, label: 'Key 5' },
-  { x: 70, y: 60, width: 10, height: 30, label: 'Key 6' },
-  { x: 82, y: 60, width: 10, height: 30, label: 'Key 7' },
-  { x: 94, y: 60, width: 10, height: 30, label: 'Key 8' },
+  { x: 20, y: 60, width: 10, height: 30, label: 'Key 2' },
+  { x: 30, y: 60, width: 10, height: 30, label: 'Key 3' },
+  { x: 40, y: 60, width: 10, height: 30, label: 'Key 4' },
+  { x: 50, y: 60, width: 10, height: 30, label: 'Key 5' },
+  { x: 60, y: 60, width: 10, height: 30, label: 'Key 6' },
+  { x: 70, y: 60, width: 10, height: 30, label: 'Key 7' },
+  { x: 80, y: 60, width: 10, height: 30, label: 'Key 8' },
 ];
 
 export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
