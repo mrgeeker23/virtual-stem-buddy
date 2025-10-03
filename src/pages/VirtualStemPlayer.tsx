@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const VirtualStemPlayer = () => {
   const { toast } = useToast();
+  const [isFavoritePlaying, setIsFavoritePlaying] = useState(false);
   const [keyAudios] = useState<HTMLAudioElement[]>(() =>
     Array.from({ length: 8 }, (_, i) => new Audio(`/audio/key${i + 1}.mp3`))
   );
@@ -26,6 +27,8 @@ const VirtualStemPlayer = () => {
 
   const handleFavoritePlay = useCallback(() => {
     favorite.play();
+    setIsFavoritePlaying(true);
+    setTimeout(() => setIsFavoritePlaying(false), 2000);
   }, [favorite]);
 
   return (
@@ -56,7 +59,7 @@ const VirtualStemPlayer = () => {
             />
             <AudioControls
               label="Favorite"
-              isPlaying={false}
+              isPlaying={isFavoritePlaying}
               onToggle={handleFavoritePlay}
               type="favorite"
             />

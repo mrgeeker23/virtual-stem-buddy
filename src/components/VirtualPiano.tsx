@@ -53,7 +53,8 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
     const now = Date.now();
     const lastTrigger = lastTriggerRef.current.get(keyIndex) || 0;
     
-    if (now - lastTrigger > 150) {
+    // Increased debounce to 400ms to reduce sensitivity and prevent glitching
+    if (now - lastTrigger > 400) {
       onKeyPlay(keyIndex);
       lastTriggerRef.current.set(keyIndex, now);
       setActiveKeys(prev => new Set(prev).add(keyIndex));
@@ -69,7 +70,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
           next.delete(keyIndex);
           return next;
         });
-      }, 150);
+      }, 200);
     }
   }, [onKeyPlay, isRecording]);
 
@@ -204,44 +205,50 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
           )}
         </div>
 
-        <div className="flex gap-2 justify-center flex-wrap">
-          {!isRecording ? (
-            <Button 
-              onClick={startRecording} 
-              variant="default"
-              className="rounded-full"
-            >
-              Start Recording
-            </Button>
-          ) : (
-            <Button 
-              onClick={stopRecording} 
-              variant="destructive"
-              className="rounded-full animate-pulse"
-            >
-              ● Stop Recording
-            </Button>
-          )}
+        <div className="space-y-3">
+          <div className="flex gap-2 justify-center flex-wrap">
+            {!isRecording ? (
+              <Button 
+                onClick={startRecording} 
+                variant="default"
+                className="rounded-full"
+              >
+                Start Recording
+              </Button>
+            ) : (
+              <Button 
+                onClick={stopRecording} 
+                variant="destructive"
+                className="rounded-full animate-pulse"
+              >
+                ● Stop Recording
+              </Button>
+            )}
+            
+            {recordedSequence.length > 0 && !isLooping && (
+              <Button 
+                onClick={playLoop} 
+                variant="outline"
+                className="rounded-full"
+              >
+                Play Loop ({recordedSequence.length})
+              </Button>
+            )}
+            
+            {isLooping && (
+              <Button 
+                onClick={stopLoop}
+                variant="outline"
+                className="rounded-full"
+              >
+                Stop Loop
+              </Button>
+            )}
+          </div>
           
-          {recordedSequence.length > 0 && !isLooping && (
-            <Button 
-              onClick={playLoop} 
-              variant="outline"
-              className="rounded-full"
-            >
-              Play Loop ({recordedSequence.length})
-            </Button>
-          )}
-          
-          {isLooping && (
-            <Button 
-              onClick={stopLoop}
-              variant="outline"
-              className="rounded-full"
-            >
-              Stop Loop
-            </Button>
-          )}
+          <p className="text-xs text-center text-muted-foreground">
+            Record your key sequence to loop it repeatedly (not saved to disk)
+          </p>
         </div>
       </div>
     </Card>
