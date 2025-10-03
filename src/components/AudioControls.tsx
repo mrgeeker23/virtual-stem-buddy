@@ -31,12 +31,22 @@ export const AudioControls = ({ label, isPlaying, onToggle, type }: AudioControl
           onClick={onToggle}
           variant={isPlaying && !isFavorite ? 'default' : 'outline'}
           size="lg"
-          className="w-full rounded-full h-12"
+          className={`w-full rounded-full h-12 transition-all duration-300 ${
+            isFavorite 
+              ? 'hover:scale-110 hover:shadow-lg active:scale-95' 
+              : 'hover:scale-105'
+          } ${
+            isFavorite && isPlaying 
+              ? 'animate-pulse bg-primary text-primary-foreground border-primary' 
+              : ''
+          }`}
         >
           {isFavorite ? (
             <>
-              <Star className="w-4 h-4 mr-2 fill-current" />
-              Play Sound
+              <Star className={`w-4 h-4 mr-2 fill-current transition-transform ${
+                isPlaying ? 'animate-spin' : ''
+              }`} />
+              {isPlaying ? 'Playing...' : 'Play Sound'}
             </>
           ) : isPlaying ? (
             <>
