@@ -110,8 +110,8 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       );
     });
 
-    if (hands.multiHandLandmarks) {
-      hands.multiHandLandmarks.forEach((landmarks) => {
+    if (hands?.landmarks) {
+      hands.landmarks.forEach((landmarks) => {
         const indexTip = landmarks[8];
         const middleTip = landmarks[12];
         

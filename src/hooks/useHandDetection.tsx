@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Hands, Results } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+import { FilesetResolver, HandLandmarker, HandLandmarkerResult } from '@mediapipe/tasks-vision';
 
 export interface HandLandmark {
   x: number;
@@ -9,47 +8,80 @@ export interface HandLandmark {
 }
 
 export const useHandDetection = (videoRef: React.RefObject<HTMLVideoElement>) => {
-  const [hands, setHands] = useState<Results | null>(null);
+  const [hands, setHands] = useState<HandLandmarkerResult | null>(null);
   const [isReady, setIsReady] = useState(false);
-  const handsInstanceRef = useRef<Hands | null>(null);
-  const cameraRef = useRef<Camera | null>(null);
+  const handLandmarkerRef = useRef<HandLandmarker | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    let isActive = true;
 
-    const handsInstance = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-    });
+    const initializeHandDetection = async () => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm'
+        );
+        
+        const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: '/models/hand_landmarker.task',
+            delegate: 'GPU'
+          },
+          numHands: 2,
+          runningMode: 'VIDEO',
+          minHandDetectionConfidence: 0.7,
+          minHandPresenceConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
 
-    handsInstance.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.5,
-    });
+        handLandmarkerRef.current = handLandmarker;
 
-    handsInstance.onResults((results: Results) => {
-      setHands(results);
-    });
-
-    handsInstanceRef.current = handsInstance;
-
-    const camera = new Camera(videoRef.current, {
-      onFrame: async () => {
-        if (videoRef.current) {
-          await handsInstance.send({ image: videoRef.current });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 1280, height: 720 } 
+        });
+        
+        if (videoRef.current && isActive) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          setIsReady(true);
+          detectHands();
         }
-      },
-      width: 1280,
-      height: 720,
-    });
+      } catch (error) {
+        console.error('Error initializing hand detection:', error);
+      }
+    };
 
-    cameraRef.current = camera;
-    camera.start().then(() => setIsReady(true));
+    const detectHands = () => {
+      if (!isActive || !videoRef.current || !handLandmarkerRef.current) return;
+      
+      if (videoRef.current.readyState >= 2) {
+        const detections = handLandmarkerRef.current.detectForVideo(
+          videoRef.current,
+          performance.now()
+        );
+        setHands(detections);
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(detectHands);
+    };
+
+    initializeHandDetection();
 
     return () => {
-      camera.stop();
-      handsInstance.close();
+      isActive = false;
+      
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+      
+      if (handLandmarkerRef.current) {
+        handLandmarkerRef.current.close();
+      }
     };
   }, [videoRef]);
 
