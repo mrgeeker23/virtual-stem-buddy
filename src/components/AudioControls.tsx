@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, Music, Drum, Heart } from 'lucide-react';
+import { Play, Pause, Music2, Drum, Star } from 'lucide-react';
 
 interface AudioControlsProps {
   label: string;
@@ -11,52 +11,51 @@ interface AudioControlsProps {
 
 const iconMap = {
   drums: Drum,
-  bass: Music,
-  favorite: Heart,
-};
-
-const colorMap = {
-  drums: 'from-primary to-primary-glow',
-  bass: 'from-secondary to-primary',
-  favorite: 'from-accent to-secondary',
+  bass: Music2,
+  favorite: Star,
 };
 
 export const AudioControls = ({ label, isPlaying, onToggle, type }: AudioControlsProps) => {
   const Icon = iconMap[type];
-  const gradient = colorMap[type];
+  const isFavorite = type === 'favorite';
 
   return (
-    <Card className="p-6 border-2 border-primary/30 bg-card/80 backdrop-blur-sm hover:shadow-glow transition-all duration-300">
+    <Card className="p-5 border shadow-sm hover:shadow-md transition-shadow">
       <div className="flex flex-col items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient}`}>
-            <Icon className="w-6 h-6 text-white" />
-          </div>
-          <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-            {label}
-          </h3>
+        <div className="flex items-center gap-2">
+          <Icon className="w-5 h-5 text-primary" />
+          <h3 className="text-base font-semibold">{label}</h3>
         </div>
+        
         <Button
           onClick={onToggle}
-          className={`w-full text-base font-semibold transition-all duration-300 ${
-            isPlaying 
-              ? `bg-gradient-to-r ${gradient} shadow-glow-lg hover:shadow-glow` 
-              : 'bg-muted hover:bg-muted/80 border-2 border-primary/40'
-          }`}
+          variant={isPlaying && !isFavorite ? 'default' : 'outline'}
           size="lg"
+          className="w-full rounded-full h-12"
         >
-          {isPlaying ? (
+          {isFavorite ? (
             <>
-              <Pause className="w-5 h-5 mr-2" />
+              <Star className="w-4 h-4 mr-2 fill-current" />
+              Play Sound
+            </>
+          ) : isPlaying ? (
+            <>
+              <Pause className="w-4 h-4 mr-2" />
               Pause
             </>
           ) : (
             <>
-              <Play className="w-5 h-5 mr-2" />
+              <Play className="w-4 h-4 mr-2" />
               Play
             </>
           )}
         </Button>
+        
+        {!isFavorite && (
+          <div className="text-xs text-muted-foreground">
+            {isPlaying ? '● Playing' : '○ Stopped'}
+          </div>
+        )}
       </div>
     </Card>
   );

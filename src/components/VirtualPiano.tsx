@@ -89,44 +89,28 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       const w = (key.width / 100) * canvas.width;
       const h = (key.height / 100) * canvas.height;
       
-      // Create gradient for keys
-      const gradient = ctx.createLinearGradient(x, y, x, y + h);
+      // iOS-style subtle gradient
       if (isActive) {
-        gradient.addColorStop(0, 'rgba(168, 85, 247, 0.9)');
-        gradient.addColorStop(1, 'rgba(236, 72, 153, 0.9)');
+        ctx.fillStyle = 'rgba(0, 122, 255, 0.8)';
       } else {
-        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.4)');
-        gradient.addColorStop(1, 'rgba(34, 211, 238, 0.4)');
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
       }
-      
-      ctx.fillStyle = gradient;
       ctx.fillRect(x, y, w, h);
       
-      // Neon border
-      ctx.strokeStyle = isActive ? 'rgba(168, 85, 247, 1)' : 'rgba(34, 211, 238, 0.8)';
-      ctx.lineWidth = 3;
+      // Clean border
+      ctx.strokeStyle = isActive ? 'rgba(0, 122, 255, 1)' : 'rgba(255, 255, 255, 0.5)';
+      ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
       
-      // Add glow effect for active keys
-      if (isActive) {
-        ctx.shadowColor = 'rgba(168, 85, 247, 0.8)';
-        ctx.shadowBlur = 20;
-        ctx.strokeRect(x, y, w, h);
-        ctx.shadowBlur = 0;
-      }
-      
       // Key number
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 16px Arial';
+      ctx.fillStyle = isActive ? 'white' : 'rgba(255, 255, 255, 0.9)';
+      ctx.font = '600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-      ctx.shadowBlur = 4;
       ctx.fillText(
         `${index + 1}`,
         x + w / 2,
-        y + h / 2 + 6
+        y + h / 2 + 5
       );
-      ctx.shadowBlur = 0;
     });
 
     if (hands?.landmarks) {
@@ -138,20 +122,16 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
           const x = tip.x * canvas.width;
           const y = tip.y * canvas.height;
           
-          // Draw neon finger tip with glow
-          ctx.shadowColor = 'rgba(236, 72, 153, 1)';
-          ctx.shadowBlur = 20;
+          // Clean iOS-style indicator
           ctx.beginPath();
-          ctx.arc(x, y, 12, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(236, 72, 153, 0.8)';
+          ctx.arc(x, y, 10, 0, 2 * Math.PI);
+          ctx.fillStyle = 'rgba(0, 122, 255, 0.6)';
           ctx.fill();
           
-          ctx.shadowBlur = 10;
           ctx.beginPath();
-          ctx.arc(x, y, 8, 0, 2 * Math.PI);
+          ctx.arc(x, y, 6, 0, 2 * Math.PI);
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
           ctx.fill();
-          ctx.shadowBlur = 0;
           
           KEY_POSITIONS.forEach((_, keyIndex) => {
             if (checkKeyCollision(x, y, keyIndex)) {
@@ -201,13 +181,11 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
   }, []);
 
   return (
-    <Card className="p-6 border-2 border-primary/30 shadow-glow-lg bg-card/80 backdrop-blur-sm">
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Virtual Piano Keys
-        </h2>
+    <Card className="p-5 border shadow-sm">
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-center">Virtual Piano Keys</h2>
         
-        <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border-2 border-primary/40 shadow-glow">
+        <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border">
           <video
             ref={videoRef}
             className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
@@ -220,43 +198,46 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
             className="absolute inset-0 w-full h-full scale-x-[-1]"
           />
           {!isReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-              <p className="text-primary-glow text-lg font-semibold animate-pulse">Initializing camera...</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90">
+              <p className="text-white text-sm">Initializing camera...</p>
             </div>
           )}
         </div>
 
-        <div className="flex gap-3 justify-center flex-wrap">
+        <div className="flex gap-2 justify-center flex-wrap">
           {!isRecording ? (
             <Button 
               onClick={startRecording} 
-              className="bg-primary hover:bg-primary/90 shadow-glow transition-all hover:shadow-glow-lg"
+              variant="default"
+              className="rounded-full"
             >
-              Start Recording Loop
+              Start Recording
             </Button>
           ) : (
             <Button 
               onClick={stopRecording} 
               variant="destructive"
-              className="shadow-glow animate-pulse-glow"
+              className="rounded-full animate-pulse"
             >
-              Stop Recording
+              ● Stop Recording
             </Button>
           )}
           
           {recordedSequence.length > 0 && !isLooping && (
             <Button 
               onClick={playLoop} 
-              className="bg-secondary hover:bg-secondary/90 shadow-glow transition-all hover:shadow-glow-lg"
+              variant="outline"
+              className="rounded-full"
             >
-              Play Loop ({recordedSequence.length} keys)
+              Play Loop ({recordedSequence.length})
             </Button>
           )}
           
           {isLooping && (
             <Button 
               onClick={stopLoop}
-              className="bg-accent hover:bg-accent/90 shadow-accent-glow"
+              variant="outline"
+              className="rounded-full"
             >
               Stop Loop
             </Button>

@@ -29,18 +29,11 @@ const VirtualStemPlayer = () => {
   }, [favorite]);
 
   return (
-    <div className="min-h-screen bg-background p-4 relative overflow-hidden">
-      {/* Gradient background effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
-      <div className="absolute top-20 left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
-        <header className="text-center space-y-3">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
-            Virtual Stem Player
-          </h1>
-          <p className="text-muted-foreground text-lg font-medium">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <header className="text-center space-y-2 py-4">
+          <h1 className="text-3xl font-semibold text-foreground">Virtual Stem Player</h1>
+          <p className="text-muted-foreground text-sm">
             Runaway - Kanye West | C# Minor | 85 BPM
           </p>
         </header>
@@ -70,9 +63,10 @@ const VirtualStemPlayer = () => {
           </div>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground border border-border/50 rounded-lg p-4 bg-card/50 backdrop-blur-sm">
+        <div className="text-center text-xs text-muted-foreground bg-card rounded-xl p-4 border">
+          <p className="font-medium mb-1">Setup Instructions</p>
           <p>Place your WAV files in the public/audio folder:</p>
-          <p className="text-primary-glow">key1.wav - key8.wav, drums.wav, bass.wav, favorite.wav</p>
+          <p className="text-foreground/60">key1.wav - key8.wav, drums.wav, bass.wav, favorite.wav</p>
         </div>
       </div>
     </div>
