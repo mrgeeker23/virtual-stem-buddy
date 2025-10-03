@@ -28,6 +28,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { hands, isReady } = useHandDetection(videoRef);
   const [activeKeys, setActiveKeys] = useState<Set<number>>(new Set());
+  const [touchedKeys, setTouchedKeys] = useState<Set<number>>(new Set());
   const lastTriggerRef = useRef<Map<number, number>>(new Map());
   
   const [isRecording, setIsRecording] = useState(false);
@@ -49,30 +50,18 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
     return fingerX >= keyXMin && fingerX <= keyXMax && fingerY >= keyYMin && fingerY <= keyYMax;
   }, []);
 
-  const triggerKey = useCallback((keyIndex: number) => {
-    const now = Date.now();
-    const lastTrigger = lastTriggerRef.current.get(keyIndex) || 0;
-    
-    // Increased debounce to 400ms to reduce sensitivity and prevent glitching
-    if (now - lastTrigger > 400) {
+  const triggerKey = useCallback((keyIndex: number, isTouching: boolean) => {
+    if (isTouching && !touchedKeys.has(keyIndex)) {
+      // First touch - play sound
       onKeyPlay(keyIndex);
-      lastTriggerRef.current.set(keyIndex, now);
-      setActiveKeys(prev => new Set(prev).add(keyIndex));
+      setTouchedKeys(prev => new Set(prev).add(keyIndex));
       
       if (isRecording) {
-        const timestamp = now - recordingStartRef.current;
+        const timestamp = Date.now() - recordingStartRef.current;
         setRecordedSequence(prev => [...prev, { key: keyIndex, timestamp }]);
       }
-      
-      setTimeout(() => {
-        setActiveKeys(prev => {
-          const next = new Set(prev);
-          next.delete(keyIndex);
-          return next;
-        });
-      }, 200);
     }
-  }, [onKeyPlay, isRecording]);
+  }, [onKeyPlay, isRecording, touchedKeys]);
 
   useEffect(() => {
     if (!hands || !canvasRef.current) return;
@@ -83,6 +72,47 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Track which keys are currently being touched this frame
+    const currentlyTouched = new Set<number>();
+
+    if (hands?.landmarks) {
+      hands.landmarks.forEach((landmarks) => {
+        const indexTip = landmarks[8];
+        const middleTip = landmarks[12];
+        
+        [indexTip, middleTip].forEach((tip) => {
+          const x = tip.x * canvas.width;
+          const y = tip.y * canvas.height;
+          
+          KEY_POSITIONS.forEach((_, keyIndex) => {
+            if (checkKeyCollision(x, y, keyIndex)) {
+              currentlyTouched.add(keyIndex);
+            }
+          });
+        });
+      });
+    }
+
+    // Update active keys based on current touches
+    setActiveKeys(currentlyTouched);
+
+    // Trigger sound for newly touched keys
+    currentlyTouched.forEach(keyIndex => {
+      triggerKey(keyIndex, true);
+    });
+
+    // Clear touched state for keys no longer being touched
+    setTouchedKeys(prev => {
+      const next = new Set(prev);
+      prev.forEach(keyIndex => {
+        if (!currentlyTouched.has(keyIndex)) {
+          next.delete(keyIndex);
+        }
+      });
+      return next;
+    });
+
+    // Draw piano keys
     KEY_POSITIONS.forEach((key, index) => {
       const isActive = activeKeys.has(index);
       const x = (key.x / 100) * canvas.width;
@@ -114,6 +144,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       );
     });
 
+    // Draw finger indicators
     if (hands?.landmarks) {
       hands.landmarks.forEach((landmarks) => {
         const indexTip = landmarks[8];
@@ -133,12 +164,6 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
           ctx.arc(x, y, 6, 0, 2 * Math.PI);
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
           ctx.fill();
-          
-          KEY_POSITIONS.forEach((_, keyIndex) => {
-            if (checkKeyCollision(x, y, keyIndex)) {
-              triggerKey(keyIndex);
-            }
-          });
         });
       });
     }
