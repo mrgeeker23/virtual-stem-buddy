@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, Volume2 } from 'lucide-react';
+import { Play, Pause, Music, Drum, Heart } from 'lucide-react';
 
 interface AudioControlsProps {
   label: string;
@@ -9,34 +9,54 @@ interface AudioControlsProps {
   type: 'drums' | 'bass' | 'favorite';
 }
 
-export const AudioControls = ({ label, isPlaying, onToggle, type }: AudioControlsProps) => {
-  const getIcon = () => {
-    if (type === 'favorite') return <Volume2 className="w-6 h-6" />;
-    return isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />;
-  };
+const iconMap = {
+  drums: Drum,
+  bass: Music,
+  favorite: Heart,
+};
 
-  const getVariant = () => {
-    if (type === 'favorite') return 'default';
-    return isPlaying ? 'secondary' : 'default';
-  };
+const colorMap = {
+  drums: 'from-primary to-primary-glow',
+  bass: 'from-secondary to-primary',
+  favorite: 'from-accent to-secondary',
+};
+
+export const AudioControls = ({ label, isPlaying, onToggle, type }: AudioControlsProps) => {
+  const Icon = iconMap[type];
+  const gradient = colorMap[type];
 
   return (
-    <Card className="p-4">
-      <div className="flex flex-col items-center gap-3">
-        <h3 className="text-lg font-semibold">{label}</h3>
+    <Card className="p-6 border-2 border-primary/30 bg-card/80 backdrop-blur-sm hover:shadow-glow transition-all duration-300">
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient}`}>
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            {label}
+          </h3>
+        </div>
         <Button
           onClick={onToggle}
-          variant={getVariant()}
+          className={`w-full text-base font-semibold transition-all duration-300 ${
+            isPlaying 
+              ? `bg-gradient-to-r ${gradient} shadow-glow-lg hover:shadow-glow` 
+              : 'bg-muted hover:bg-muted/80 border-2 border-primary/40'
+          }`}
           size="lg"
-          className="w-32 h-32 rounded-full text-lg"
         >
-          {getIcon()}
+          {isPlaying ? (
+            <>
+              <Pause className="w-5 h-5 mr-2" />
+              Pause
+            </>
+          ) : (
+            <>
+              <Play className="w-5 h-5 mr-2" />
+              Play
+            </>
+          )}
         </Button>
-        {type !== 'favorite' && (
-          <p className="text-sm text-muted-foreground">
-            {isPlaying ? 'Playing' : 'Paused'}
-          </p>
-        )}
       </div>
     </Card>
   );
