@@ -1,0 +1,224 @@
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { useHandDetection } from '@/hooks/useHandDetection';
+import { Card } from '@/components/ui/card';
+
+interface KeyPress {
+  key: number;
+  timestamp: number;
+}
+
+interface VirtualPianoProps {
+  onKeyPlay: (keyIndex: number) => void;
+}
+
+const KEY_POSITIONS = [
+  { x: 10, y: 60, width: 10, height: 30, label: 'Key 1' },
+  { x: 22, y: 60, width: 10, height: 30, label: 'Key 2' },
+  { x: 34, y: 60, width: 10, height: 30, label: 'Key 3' },
+  { x: 46, y: 60, width: 10, height: 30, label: 'Key 4' },
+  { x: 58, y: 60, width: 10, height: 30, label: 'Key 5' },
+  { x: 70, y: 60, width: 10, height: 30, label: 'Key 6' },
+  { x: 82, y: 60, width: 10, height: 30, label: 'Key 7' },
+  { x: 94, y: 60, width: 10, height: 30, label: 'Key 8' },
+];
+
+export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { hands, isReady } = useHandDetection(videoRef);
+  const [activeKeys, setActiveKeys] = useState<Set<number>>(new Set());
+  const lastTriggerRef = useRef<Map<number, number>>(new Map());
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedSequence, setRecordedSequence] = useState<KeyPress[]>([]);
+  const [isLooping, setIsLooping] = useState(false);
+  const recordingStartRef = useRef<number>(0);
+  const loopIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const checkKeyCollision = useCallback((fingerX: number, fingerY: number, keyIndex: number) => {
+    const key = KEY_POSITIONS[keyIndex];
+    const canvasWidth = canvasRef.current?.width || 1280;
+    const canvasHeight = canvasRef.current?.height || 720;
+    
+    const keyXMin = (key.x / 100) * canvasWidth;
+    const keyXMax = ((key.x + key.width) / 100) * canvasWidth;
+    const keyYMin = (key.y / 100) * canvasHeight;
+    const keyYMax = ((key.y + key.height) / 100) * canvasHeight;
+    
+    return fingerX >= keyXMin && fingerX <= keyXMax && fingerY >= keyYMin && fingerY <= keyYMax;
+  }, []);
+
+  const triggerKey = useCallback((keyIndex: number) => {
+    const now = Date.now();
+    const lastTrigger = lastTriggerRef.current.get(keyIndex) || 0;
+    
+    if (now - lastTrigger > 150) {
+      onKeyPlay(keyIndex);
+      lastTriggerRef.current.set(keyIndex, now);
+      setActiveKeys(prev => new Set(prev).add(keyIndex));
+      
+      if (isRecording) {
+        const timestamp = now - recordingStartRef.current;
+        setRecordedSequence(prev => [...prev, { key: keyIndex, timestamp }]);
+      }
+      
+      setTimeout(() => {
+        setActiveKeys(prev => {
+          const next = new Set(prev);
+          next.delete(keyIndex);
+          return next;
+        });
+      }, 150);
+    }
+  }, [onKeyPlay, isRecording]);
+
+  useEffect(() => {
+    if (!hands || !canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    KEY_POSITIONS.forEach((key, index) => {
+      const isActive = activeKeys.has(index);
+      ctx.fillStyle = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(255, 255, 255, 0.3)';
+      ctx.fillRect(
+        (key.x / 100) * canvas.width,
+        (key.y / 100) * canvas.height,
+        (key.width / 100) * canvas.width,
+        (key.height / 100) * canvas.height
+      );
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        (key.x / 100) * canvas.width,
+        (key.y / 100) * canvas.height,
+        (key.width / 100) * canvas.width,
+        (key.height / 100) * canvas.height
+      );
+      
+      ctx.fillStyle = 'white';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        `${index + 1}`,
+        ((key.x + key.width / 2) / 100) * canvas.width,
+        ((key.y + key.height / 2) / 100) * canvas.height + 5
+      );
+    });
+
+    if (hands.multiHandLandmarks) {
+      hands.multiHandLandmarks.forEach((landmarks) => {
+        const indexTip = landmarks[8];
+        const middleTip = landmarks[12];
+        
+        [indexTip, middleTip].forEach((tip) => {
+          const x = tip.x * canvas.width;
+          const y = tip.y * canvas.height;
+          
+          ctx.beginPath();
+          ctx.arc(x, y, 10, 0, 2 * Math.PI);
+          ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+          ctx.fill();
+          
+          KEY_POSITIONS.forEach((_, keyIndex) => {
+            if (checkKeyCollision(x, y, keyIndex)) {
+              triggerKey(keyIndex);
+            }
+          });
+        });
+      });
+    }
+  }, [hands, activeKeys, checkKeyCollision, triggerKey]);
+
+  const startRecording = useCallback(() => {
+    setRecordedSequence([]);
+    recordingStartRef.current = Date.now();
+    setIsRecording(true);
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    setIsRecording(false);
+  }, []);
+
+  const playLoop = useCallback(() => {
+    if (recordedSequence.length === 0) return;
+    
+    setIsLooping(true);
+    
+    const playSequence = () => {
+      recordedSequence.forEach((keyPress) => {
+        setTimeout(() => {
+          onKeyPlay(keyPress.key);
+        }, keyPress.timestamp);
+      });
+      
+      const totalDuration = recordedSequence[recordedSequence.length - 1].timestamp + 200;
+      loopIntervalRef.current = setTimeout(playSequence, totalDuration);
+    };
+    
+    playSequence();
+  }, [recordedSequence, onKeyPlay]);
+
+  const stopLoop = useCallback(() => {
+    setIsLooping(false);
+    if (loopIntervalRef.current) {
+      clearTimeout(loopIntervalRef.current);
+      loopIntervalRef.current = null;
+    }
+  }, []);
+
+  return (
+    <Card className="p-4">
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-center">Virtual Piano Keys</h2>
+        
+        <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+          <video
+            ref={videoRef}
+            className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
+            playsInline
+          />
+          <canvas
+            ref={canvasRef}
+            width={1280}
+            height={720}
+            className="absolute inset-0 w-full h-full scale-x-[-1]"
+          />
+          {!isReady && (
+            <div className="absolute inset-0 flex items-center justify-center text-white">
+              <p>Initializing camera...</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-2 justify-center flex-wrap">
+          {!isRecording ? (
+            <Button onClick={startRecording} variant="default">
+              Start Recording Loop
+            </Button>
+          ) : (
+            <Button onClick={stopRecording} variant="destructive">
+              Stop Recording
+            </Button>
+          )}
+          
+          {recordedSequence.length > 0 && !isLooping && (
+            <Button onClick={playLoop} variant="secondary">
+              Play Loop ({recordedSequence.length} keys)
+            </Button>
+          )}
+          
+          {isLooping && (
+            <Button onClick={stopLoop} variant="outline">
+              Stop Loop
+            </Button>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
