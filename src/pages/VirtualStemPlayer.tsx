@@ -16,14 +16,23 @@ const VirtualStemPlayer = () => {
   const favorite = useOneShot('/audio/favorite.mp3');
 
   const handleKeyPlay = useCallback((keyIndex: number) => {
+    console.log('Attempting to play key:', keyIndex);
     const audio = keyAudios[keyIndex];
     if (audio) {
+      console.log('Audio element found, playing:', audio.src);
       audio.currentTime = 0;
       audio.play().catch((error) => {
-        console.error('Error playing key:', error);
+        console.error('Error playing key:', keyIndex, error);
+        toast({
+          title: "Audio Error",
+          description: `Could not play key${keyIndex + 1}.mp3. Make sure the file exists in /public/audio/`,
+          variant: "destructive",
+        });
       });
+    } else {
+      console.error('Audio element not found for key:', keyIndex);
     }
-  }, [keyAudios]);
+  }, [keyAudios, toast]);
 
   const handleFavoritePlay = useCallback(() => {
     favorite.play();

@@ -23,10 +23,13 @@ export const useAudioPlayer = (audioSrc: string, options: AudioPlayerOptions = {
   const play = useCallback(() => {
     initAudio();
     if (audioRef.current) {
-      audioRef.current.play();
+      console.log('Playing audio:', audioSrc);
+      audioRef.current.play().catch(error => {
+        console.error('Error playing audio:', audioSrc, error);
+      });
       setIsPlaying(true);
     }
-  }, [initAudio]);
+  }, [initAudio, audioSrc]);
 
   const pause = useCallback(() => {
     if (audioRef.current) {
@@ -56,8 +59,11 @@ export const useAudioPlayer = (audioSrc: string, options: AudioPlayerOptions = {
 
 export const useOneShot = (audioSrc: string) => {
   const play = useCallback(() => {
+    console.log('Playing one-shot audio:', audioSrc);
     const audio = new Audio(audioSrc);
-    audio.play();
+    audio.play().catch(error => {
+      console.error('Error playing one-shot audio:', audioSrc, error);
+    });
   }, [audioSrc]);
 
   return { play };
