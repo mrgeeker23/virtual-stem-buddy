@@ -13,14 +13,14 @@ interface VirtualPianoProps {
 }
 
 const KEY_POSITIONS = [
-  { x: 5, y: 60, width: 8, height: 30, label: 'Key 1' },
-  { x: 17, y: 60, width: 8, height: 30, label: 'Key 2' },
-  { x: 29, y: 60, width: 8, height: 30, label: 'Key 3' },
-  { x: 41, y: 60, width: 8, height: 30, label: 'Key 4' },
-  { x: 53, y: 60, width: 8, height: 30, label: 'Key 5' },
-  { x: 65, y: 60, width: 8, height: 30, label: 'Key 6' },
-  { x: 77, y: 60, width: 8, height: 30, label: 'Key 7' },
-  { x: 89, y: 60, width: 8, height: 30, label: 'Key 8' },
+  { x: 5, y: 60, width: 10, height: 30, label: 'Key 1' },
+  { x: 18, y: 60, width: 10, height: 30, label: 'Key 2' },
+  { x: 31, y: 60, width: 10, height: 30, label: 'Key 3' },
+  { x: 44, y: 60, width: 10, height: 30, label: 'Key 4' },
+  { x: 57, y: 60, width: 10, height: 30, label: 'Key 5' },
+  { x: 70, y: 60, width: 10, height: 30, label: 'Key 6' },
+  { x: 83, y: 60, width: 10, height: 30, label: 'Key 7' },
+  { x: 96, y: 60, width: 10, height: 30, label: 'Key 8' },
 ];
 
 export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
@@ -93,8 +93,15 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       });
     }
 
-    // Update active keys based on current touches
-    setActiveKeys(currentlyTouched);
+    // Only update activeKeys if they've changed
+    setActiveKeys(prev => {
+      if (prev.size !== currentlyTouched.size || 
+          [...prev].some(key => !currentlyTouched.has(key)) ||
+          [...currentlyTouched].some(key => !prev.has(key))) {
+        return currentlyTouched;
+      }
+      return prev;
+    });
 
     // Trigger sound for newly touched keys
     currentlyTouched.forEach(keyIndex => {
@@ -114,7 +121,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
 
     // Draw piano keys
     KEY_POSITIONS.forEach((key, index) => {
-      const isActive = activeKeys.has(index);
+      const isActive = currentlyTouched.has(index);
       const x = (key.x / 100) * canvas.width;
       const y = (key.y / 100) * canvas.height;
       const w = (key.width / 100) * canvas.width;
@@ -178,7 +185,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
         });
       });
     }
-  }, [hands, activeKeys, checkKeyCollision, triggerKey]);
+  }, [hands, checkKeyCollision, triggerKey]);
 
   const startRecording = useCallback(() => {
     setRecordedSequence([]);
