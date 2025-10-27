@@ -13,14 +13,14 @@ interface VirtualPianoProps {
 }
 
 const KEY_POSITIONS = [
-  { x: 10, y: 60, width: 10, height: 30, label: 'Key 1' },
-  { x: 20, y: 60, width: 10, height: 30, label: 'Key 2' },
-  { x: 30, y: 60, width: 10, height: 30, label: 'Key 3' },
-  { x: 40, y: 60, width: 10, height: 30, label: 'Key 4' },
-  { x: 50, y: 60, width: 10, height: 30, label: 'Key 5' },
-  { x: 60, y: 60, width: 10, height: 30, label: 'Key 6' },
-  { x: 70, y: 60, width: 10, height: 30, label: 'Key 7' },
-  { x: 80, y: 60, width: 10, height: 30, label: 'Key 8' },
+  { x: 5, y: 60, width: 8, height: 30, label: 'Key 1' },
+  { x: 17, y: 60, width: 8, height: 30, label: 'Key 2' },
+  { x: 29, y: 60, width: 8, height: 30, label: 'Key 3' },
+  { x: 41, y: 60, width: 8, height: 30, label: 'Key 4' },
+  { x: 53, y: 60, width: 8, height: 30, label: 'Key 5' },
+  { x: 65, y: 60, width: 8, height: 30, label: 'Key 6' },
+  { x: 77, y: 60, width: 8, height: 30, label: 'Key 7' },
+  { x: 89, y: 60, width: 8, height: 30, label: 'Key 8' },
 ];
 
 export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
@@ -120,13 +120,24 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       const w = (key.width / 100) * canvas.width;
       const h = (key.height / 100) * canvas.height;
       
+      // Add glow effect for active keys
+      if (isActive) {
+        ctx.shadowColor = 'rgba(0, 122, 255, 0.8)';
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      }
+      
       // iOS-style subtle gradient
       if (isActive) {
-        ctx.fillStyle = 'rgba(0, 122, 255, 0.8)';
+        ctx.fillStyle = 'rgba(0, 122, 255, 0.9)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
       }
       ctx.fillRect(x, y, w, h);
+      
+      // Reset shadow for border
+      ctx.shadowBlur = 0;
       
       // Clean border
       ctx.strokeStyle = isActive ? 'rgba(0, 122, 255, 1)' : 'rgba(255, 255, 255, 0.5)';
