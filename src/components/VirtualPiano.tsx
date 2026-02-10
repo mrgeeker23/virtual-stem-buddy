@@ -227,6 +227,12 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
   return (
     <Card className="p-5 border shadow-sm">
       <div className="space-y-4">
+        <p 
+          className="text-xs text-center font-medium text-muted-foreground animate-[slide-in-left_1s_ease-out_forwards] opacity-0"
+          style={{ animationFillMode: 'forwards' }}
+        >
+          📱 DOWNLOAD IRIUN CAM ON YOUR PHONE IF YOU DON'T HAVE A CAMERA
+        </p>
         <h2 className="text-lg font-semibold text-center">Virtual Piano Keys</h2>
         
         <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border">

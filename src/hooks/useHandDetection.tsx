@@ -37,7 +37,11 @@ export const useHandDetection = (videoRef: React.RefObject<HTMLVideoElement>) =>
         handLandmarkerRef.current = handLandmarker;
 
         const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: 1280, height: 720 } 
+          video: { 
+            width: { ideal: 1280, min: 640 }, 
+            height: { ideal: 720, min: 480 },
+            facingMode: 'user'
+          } 
         });
         
         if (videoRef.current && isActive) {
