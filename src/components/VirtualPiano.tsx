@@ -35,7 +35,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
   const [recordedSequence, setRecordedSequence] = useState<KeyPress[]>([]);
   const [isLooping, setIsLooping] = useState(false);
   const recordingStartRef = useRef<number>(0);
-  const loopIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const loopIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const checkKeyCollision = useCallback((fingerX: number, fingerY: number, keyIndex: number) => {
     const key = KEY_POSITIONS[keyIndex];
