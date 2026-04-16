@@ -90,10 +90,22 @@ export default {
             opacity: "1",
           },
         },
+        "cloud-color": {
+          "0%": {
+            filter: "brightness(1) hue-rotate(0deg)",
+          },
+          "50%": {
+            filter: "brightness(1.2) hue-rotate(10deg)",
+          },
+          "100%": {
+            filter: "brightness(1) hue-rotate(-10deg)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "cloud-color": "cloud-color 3s ease-in-out infinite alternate",
       },
     },
   },

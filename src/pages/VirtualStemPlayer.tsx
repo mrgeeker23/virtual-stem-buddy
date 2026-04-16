@@ -3,6 +3,7 @@ import { VirtualPiano } from '@/components/VirtualPiano';
 import { AudioControls } from '@/components/AudioControls';
 import { useAudioPlayer, useOneShot } from '@/hooks/useAudioPlayer';
 import { useToast } from '@/hooks/use-toast';
+import logo from '@/assets/logo.jpg';
 
 const VirtualStemPlayer = () => {
   const { toast } = useToast();
@@ -43,8 +44,14 @@ const VirtualStemPlayer = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        <header className="text-center space-y-2 py-4">
-          <h1 className="text-3xl font-semibold text-foreground">Virtual Stem Player</h1>
+        <header className="text-center space-y-3 py-4">
+          <div className="flex justify-center">
+            <img 
+              src={logo} 
+              alt="Virtual Stem Player" 
+              className="h-16 md:h-20 object-contain animate-[cloud-color_3s_ease-in-out_infinite_alternate]"
+            />
+          </div>
           <p className="text-muted-foreground text-sm">
             Runaway - Kanye West | C# Minor | 85 BPM
           </p>
