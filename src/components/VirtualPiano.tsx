@@ -129,25 +129,22 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
       
       // Add glow effect for active keys
       if (isActive) {
-        ctx.shadowColor = 'rgba(147, 51, 234, 0.8)';
+        ctx.shadowColor = 'rgba(0, 168, 240, 0.8)';
         ctx.shadowBlur = 25;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
       }
       
-      // Creative purple gradient
       if (isActive) {
-        ctx.fillStyle = 'rgba(147, 51, 234, 0.85)';
+        ctx.fillStyle = 'rgba(0, 168, 240, 0.85)';
       } else {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       }
       ctx.fillRect(x, y, w, h);
       
-      // Reset shadow for border
       ctx.shadowBlur = 0;
       
-      // Clean border
-      ctx.strokeStyle = isActive ? 'rgba(147, 51, 234, 1)' : 'rgba(255, 255, 255, 0.4)';
+      ctx.strokeStyle = isActive ? 'rgba(0, 168, 240, 1)' : 'rgba(255, 255, 255, 0.4)';
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
       
@@ -175,7 +172,7 @@ export const VirtualPiano = ({ onKeyPlay }: VirtualPianoProps) => {
           // Clean iOS-style indicator
           ctx.beginPath();
           ctx.arc(x, y, 10, 0, 2 * Math.PI);
-          ctx.fillStyle = 'rgba(147, 51, 234, 0.6)';
+          ctx.fillStyle = 'rgba(0, 168, 240, 0.6)';
           ctx.fill();
           
           ctx.beginPath();
